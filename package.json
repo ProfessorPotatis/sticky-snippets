@@ -1,0 +1,26 @@
+{
+  "name": "sk222uf-examination-2",
+  "version": "1.0.0",
+  "description": "Examination 2 in the course 1dv023. Sticky snippets.",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/1dv023/sk222uf-examination-2.git"
+  },
+  "keywords": [
+    "examination",
+    "sticky",
+    "snippets",
+    "snippets",
+    "1dv023"
+  ],
+  "author": "ProfessorPotatis",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/1dv023/sk222uf-examination-2/issues"
+  },
+  "homepage": "https://github.com/1dv023/sk222uf-examination-2#readme"
+}
