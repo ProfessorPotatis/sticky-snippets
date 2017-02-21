@@ -22,5 +22,10 @@
   "bugs": {
     "url": "https://github.com/1dv023/sk222uf-examination-2/issues"
   },
-  "homepage": "https://github.com/1dv023/sk222uf-examination-2#readme"
+  "homepage": "https://github.com/1dv023/sk222uf-examination-2#readme",
+  "dependencies": {
+    "express": "^4.14.1",
+    "express-session": "^1.15.1",
+    "mongoose": "^4.8.4"
+  }
 }
