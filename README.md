@@ -1,49 +1,30 @@
-# node-mongodb-vagrant
-This is a boilerplate vagrant solution for students taking the course sevrer based web programming at the Linnaeus University, Kalmar, Sweden
+##Examination 2 - Sticky Snippets
 
-Following stuff will be installed:
-* node.js, latest stable (OBS not LTS) version
-* npm (along with node.js)
-* mongodb - noSQL database, latest version
-* redis server - fast in memory server, version 3.0.6
+In this assignment, you will create a web application for persistent handling of [snippets](https://en.wikipedia.org/wiki/Snippet_(programming)) using an application framework and an object data modeling library for MongoDB.
 
-To get this to work, you must have VirtualBox and Vagrant installed. Installers for VirtualBox are available at http://www.virtualbox.org, and installers for
-Vagrant are available at http://www.vagrantup.com.
+##Requirements
 
-Clone this repo to a folder on your local system and give it a name of your own (my_project in this case)
+The application in [Node.js](https://nodejs.org/en/) will use [Express.js](http://expressjs.com/) as the application  framework and [Mongoose](http://mongoosejs.com/) as  the object modeling library. The application must have full CRUD functionality regarding snippets, whereby a user must be able to create, read, update and delete snippets.
 
-    git clone https://github.com/1dv023/node-mongodb-vagrant.git my_project
+Users must be able to register themselves and must be able to login to the application after entering a user ID and a password. A user cannot register an already existing user ID as user ID is unique for the application. A user must be able to log off from the application it has already logged on to.
 
-go to that directory and start up the vagrant machine
+Anonymous users will only be able to view snippets. Authenticated users, in addition to view, must also be able to create, edit and delete snippets.  Because of this the application must support some basic authentication and authorization. Only use of the session store, using the [express-session](https://github.com/expressjs/session) module, is allowed for implementation of authentication and authorization. You must not use any modules like Passport, etc., to authenticate or authorize.
 
-    cd my_project
-    vagrant up
+If a user tries to access a resource which requires the user to be logged in, the application must return the status code 403 (forbidden). Of course, when necessary, the application must also return the status code 404 (not found) as well as 500 (internal error).
 
-The Vagrantfile will download and install the hashicorp/precise32 vagrant box if you don't
-already have it.
+As far as posssible, the application must be protected from vulnerable attacks.
 
-After a few minutes, you should have a virtual dev environment with node, npm, mongodb and redis.
-The port 8000 on the VM is forwarded to port 8000 on the localhost.
+##Setup 
 
-You can test out your environment by ssh'ing into your environment and running the sample script:
+It is otional to use our vagrants but if you want follow the below steps.
 
-    vagrant ssh
-    node app.js
+1. Clone your examination repository: `git clone https://github.com/1dv023/<USERNAME>-examination-2`
+2. Pull the [node-mongodb-vagrant](https://github.com/1dv023/node-mongodb-vagrant) into the repository: `git pull https://github.com/1dv023/node-mongodb-vagrant.git`
+3. Pull and merge the [javascript-style-guide](https://github.com/CS-LNU-Learning-Objects/javascript-style-guide) into the repository: `git pull https://github.com/CS-LNU-Learning-Objects/javascript-style-guide`. (Or write your own style guide files.)
+4. Run the following from your terminal: `vagrant up`.
+5. SSH into the machine: `vagrant ssh`.
 
-## Important note about Installing NPM Packages
-
-There are problems installing npm packages in a vagrant machine running Virtual Box on Windows. This goes for certain packages as "jade" and "express" which are trying to create symlinks during installation
-
-This can cause problems when you're attempting to install certain packages via npm. For
-example, the 'jade' and 'express' packages create symlinks during installation.
-
-The best workaround for this is to install node packages in your shared folder with the
---no-bin-links flag, e.g.
-
-    npm install express --no-bin-links
-
-You can also try to install the package as globals if you need to execture the bin-file
-
-    npm install jade -g
-
-This vagrant images is tested on Mac OSX Yosemite with Virtual Box version 5.0.10 and Vagrant version 1.7.4
+## Extra features [optional]
+For those who wants to expand functionality in the application beyond the standard requirements for passing this assignment (see above) feel free to do that- Some examples of this could be:
+* Add support for [tagging](https://en.wikipedia.org/wiki/Tag_(metadata)) each snippet by one or more tags
+* Add support for just showing snippets thats belongs to one tag
