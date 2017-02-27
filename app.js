@@ -10,8 +10,13 @@
  let express = require('express');
  let hbs = require('express-handlebars');
 
+ let mongoose = require('./config/mongoose.js');
+
  let app = express();
  let port = process.env.PORT || 8000;
+
+ // Connect to database
+ mongoose();
 
  // View engine
  app.engine('.hbs', hbs({defaultLayout: 'main', extname: '.hbs'}));
