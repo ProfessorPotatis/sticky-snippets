@@ -11,7 +11,18 @@ const router = require('express').Router();
 
 router.route('/').get(function(req, res) {
     res.render('home/index');
-    //res.send('Hello World!');
+});
+
+router.route('/create').get(function(req, res) {
+    res.render('home/create');
+});
+
+router.route('/register').get(function(req, res) {
+    res.render('home/register');
+});
+
+router.route('/login').get(function(req, res) {
+    res.render('home/login');
 });
 
 
