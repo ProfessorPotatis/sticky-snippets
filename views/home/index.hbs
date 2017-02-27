@@ -1,2 +1,10 @@
 <h2>Snippets</h2>
 <hr>
+{{#if stickySnippets }}
+<dl>
+    {{#each stickySnippets}}
+        <dt>{{this.createdAt}}</dt>
+        <dd>{{this.value}}</dd>
+    {{/each}}
+</dl>
+{{/if}}
