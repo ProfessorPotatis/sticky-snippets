@@ -24,7 +24,9 @@
   },
   "homepage": "https://github.com/1dv023/sk222uf-examination-2#readme",
   "dependencies": {
+    "body-parser": "^1.16.1",
     "express": "^4.14.1",
+    "express-handlebars": "^3.0.0",
     "express-session": "^1.15.1",
     "mongoose": "^4.8.4"
   }
