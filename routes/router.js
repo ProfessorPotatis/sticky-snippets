@@ -10,7 +10,8 @@
 const router = require('express').Router();
 
 router.route('/').get(function(req, res) {
-    res.send('Hello World!');
+    res.render('home/index');
+    //res.send('Hello World!');
 });
 
 
