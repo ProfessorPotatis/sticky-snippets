@@ -9,23 +9,35 @@
 
 const router = require('express').Router();
 let StickySnippet = require('../models/StickySnippet.js');
-console.log(StickySnippet);
 
 router.route('/').get(function(req, res) {
+    /*StickySnippet.remove({}, function(err) {
+   console.log('collection removed');
+});*/
     StickySnippet.find({}).exec()
-            .then (function(doc) {
-                console.log(doc);
-                // TODO: Lazy programmer! I don't transform the document to a view model...
-                res.render('home/index', { stickySnippets: doc });
+            .then (function(data) {
+                // Map the data
+                let context = {
+                    snippets: data.map(function(snippet) {
+                        return {
+                            value: snippet.value,
+                            createdAt: snippet.createdAt,
+                            id: snippet.id
+                        };
+                    })
+                };
+                return context.snippets;
+            })
+            .then (function(context) {
+                res.render('home/index', { stickySnippets: context });
             })
             .catch (function(err) {
                 res.render('home/index', {
-                    // DIRTY(?): Use the flash partial to view the error message.
+                    // Use the flash partial to view the error message.
                     flash: {type: 'danger', text: err.message},
                     stickySnippets: []
                 });
             });
-    //res.render('home/index');
 });
 
 router.route('/create').get(function(req, res) {
@@ -62,6 +74,49 @@ router.route('/create').post(function(req, res, next) {
 
                 // Let the middleware handle any errors but ValidatorErrors.
                 next(err);
+            });
+});
+
+router.route('/create/:id').get(function(req, res) {
+    StickySnippet.find({_id: req.params.id}).exec()
+            .then (function(data) {
+                // Map the data
+                let context = {
+                    snippets: data.map(function(snippet) {
+                        return {
+                            value: snippet.value,
+                            createdAt: snippet.createdAt,
+                            id: snippet.id
+                        };
+                    })
+                };
+                return context.snippets;
+            })
+            .then (function(context) {
+                res.render('home/update', { stickySnippets: context });
+            })
+            .catch (function(err) {
+                res.render('home/update', {
+                    // Use the flash partial to view the error message.
+                    flash: {type: 'danger', text: err.message},
+                    stickySnippets: []
+                });
+            });
+});
+
+router.route('/create/:id').post(function(req, res) {
+    StickySnippet.findOneAndUpdate({_id: req.params.id}, {value: req.body.value}).exec()
+            .then (function() {
+                // Redirect to homepage and show a message.
+                req.session.flash = {type: 'success', text: 'The sticky snippet was updated successfully.'};
+                res.redirect('/');
+            })
+            .catch (function(err) {
+                res.render('home/update', {
+                    // Use the flash partial to view the error message.
+                    flash: {type: 'danger', text: err.message},
+                    stickySnippets: []
+                });
             });
 });
 

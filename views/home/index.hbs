@@ -3,8 +3,13 @@
 {{#if stickySnippets }}
 <dl>
     {{#each stickySnippets}}
-        <dt>{{this.createdAt}}</dt>
-        <dd>{{this.value}}</dd>
+        <a href="/create/{{id}}">
+            <div class="snippet">
+                <b>{{createdAt}}</b><br>
+                {{value}}<br>
+                <button>Update</button>
+            </div>
+        </a><br>
     {{/each}}
 </dl>
 {{/if}}

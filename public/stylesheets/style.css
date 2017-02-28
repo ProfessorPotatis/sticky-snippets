@@ -9,6 +9,12 @@ body {
     padding-top: 48px;
 }
 
+/* LINK SETTINGS */
+a {
+    text-decoration: none;
+    color: black;
+}
+
 /* WEBSITE HEADER SETTINGS */
 .pageHeader {
     font-family: Impact, Charcoal, sans-serif;
@@ -87,4 +93,12 @@ form {
 }
 .redFlash ul {
     list-style: none;
+}
+
+/* SNIPPET SETTINGS */
+.snippet {
+    border: 1px solid #000;
+    background-color: lightyellow;
+    margin-top: 5px;
+    padding: 5px;
 }
