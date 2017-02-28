@@ -8,7 +8,8 @@
 'use strict';
 
 const router = require('express').Router();
-let StickySnippet = require('../models/StickySnippet.js');
+let StickySnippet = require('../models/StickySnippet');
+let RegisterUser = require('../models/RegisterUser');
 
 router.route('/').get(function(req, res) {
     /*StickySnippet.remove({}, function(err) {
@@ -46,35 +47,35 @@ router.route('/create').get(function(req, res) {
 
 router.route('/create').post(function(req, res, next) {
     // Create a new stickySnippet.
-        let stickySnippet = new StickySnippet({
-            value: req.body.value
+    let stickySnippet = new StickySnippet({
+        value: req.body.value
+    });
+
+    // Save the stickySnippet to the database.
+    stickySnippet.save()
+        .then(function() {
+            // Redirect to homepage and show a message.
+            req.session.flash = {type: 'success', text: 'The sticky snippet was saved successfully.'};
+            res.redirect('/');
+        })
+        .catch(function(err) {
+            // If a validation error occurred, view the form and an error message.
+            if (err.errors.value.name === 'ValidatorError') {
+                // We handle the validation error!
+                return res.render('home/create', {
+                    validationErrors: [err.errors.value.message],
+                    value: req.body.value
+                });
+            } else if (err.errors.value.name === 'CastError') {
+                // If it's a cast error we considers it's a bad request!
+                // (Maybe not the smartest thing to do, but WTF, we need to learn
+                // what to do if we want to change the status of the response.)
+                err.status = 400;
+            }
+
+            // Let the middleware handle any errors but ValidatorErrors.
+            next(err);
         });
-
-        // Save the stickySnippet to the database.
-        stickySnippet.save()
-            .then(function() {
-                // Redirect to homepage and show a message.
-                req.session.flash = {type: 'success', text: 'The sticky snippet was saved successfully.'};
-                res.redirect('/');
-            })
-            .catch(function(err) {
-                // If a validation error occurred, view the form and an error message.
-                if (err.errors.value.name === 'ValidatorError') {
-                    // We handle the validation error!
-                    return res.render('home/create', {
-                        validationErrors: [err.errors.value.message],
-                        value: req.body.value
-                    });
-                } else if (err.errors.value.name === 'CastError') {
-                    // If it's a cast error we considers it's a bad request!
-                    // (Maybe not the smartest thing to do, but WTF, we need to learn
-                    // what to do if we want to change the status of the response.)
-                    err.status = 400;
-                }
-
-                // Let the middleware handle any errors but ValidatorErrors.
-                next(err);
-            });
 });
 
 router.route('/update/:id').get(function(req, res) {
@@ -137,7 +138,41 @@ router.route('/delete/:id').get(function(req, res) {
 });
 
 router.route('/register').get(function(req, res) {
-    res.render('home/register');
+    res.render('home/register', {username: undefined, password: undefined});
+});
+
+router.route('/register').post(function(req, res, next) {
+    // Create a new user.
+    let registerUser = new RegisterUser({
+        username: req.body.username,
+        password: req.body.password
+    });
+
+    // Save the user to the database.
+    registerUser.save()
+        .then(function() {
+            // Redirect to homepage and show a message.
+            req.session.flash = {type: 'success', text: 'The user was saved successfully. Please login.'};
+            res.redirect('/login');
+        })
+        .catch(function(err) {
+            // If a validation error occurred, view the form and an error message.
+            if (err.errors.password.name === 'ValidatorError') {
+                // We handle the validation error!
+                return res.render('home/register', {
+                    validationErrors: [err.errors.password.message],
+                    password: req.body.password
+                });
+            } else if (err.errors.password.name === 'CastError') {
+                // If it's a cast error we considers it's a bad request!
+                // (Maybe not the smartest thing to do, but WTF, we need to learn
+                // what to do if we want to change the status of the response.)
+                err.status = 400;
+            }
+
+            // Let the middleware handle any errors but ValidatorErrors.
+            next(err);
+        });
 });
 
 router.route('/login').get(function(req, res) {

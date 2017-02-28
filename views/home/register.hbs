@@ -1,10 +1,8 @@
 <h2>Register user</h2>
 <form action="/register" method="post">
-    <input type="email" class="form-register" placeholder="E-mail" value="{{email}}"></input><br>
-    <input type="text" class="form-register" placeholder="Firstname" value="{{fname}}"></input>
-    <input type="text" class="form-register" placeholder="Lastname" value="{{lname}}"></input><br>
-    <input type="text" class="form-register" placeholder="Username" value="{{uname}}"></input>
-    <input type="password" class="form-register" placeholder="Password" value="{{password}}"></input><br>
+    {{>validationSummary}}
+    <input type="text" class="form-register" name="username" placeholder="Username" value="{{username}}"></input><br>
+    <input type="password" class="form-register" name="password" placeholder="Password" value="{{password}}"></input><br>
     <button class="form-button" type="reset">Reset</button>
     <button class="form-button" type="submit">Register</button>
 </form>
