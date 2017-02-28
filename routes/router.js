@@ -77,7 +77,7 @@ router.route('/create').post(function(req, res, next) {
             });
 });
 
-router.route('/create/:id').get(function(req, res) {
+router.route('/update/:id').get(function(req, res) {
     StickySnippet.find({_id: req.params.id}).exec()
             .then (function(data) {
                 // Map the data
@@ -104,7 +104,7 @@ router.route('/create/:id').get(function(req, res) {
             });
 });
 
-router.route('/create/:id').post(function(req, res) {
+router.route('/update/:id').post(function(req, res) {
     StickySnippet.findOneAndUpdate({_id: req.params.id}, {value: req.body.value}).exec()
             .then (function() {
                 // Redirect to homepage and show a message.
@@ -113,6 +113,22 @@ router.route('/create/:id').post(function(req, res) {
             })
             .catch (function(err) {
                 res.render('home/update', {
+                    // Use the flash partial to view the error message.
+                    flash: {type: 'danger', text: err.message},
+                    stickySnippets: []
+                });
+            });
+});
+
+router.route('/delete/:id').get(function(req, res) {
+    StickySnippet.findOneAndRemove({_id: req.params.id}).exec()
+            .then (function() {
+                // Redirect to homepage and show a message.
+                req.session.flash = {type: 'success', text: 'The sticky snippet was removed successfully.'};
+                res.redirect('/');
+            })
+            .catch (function(err) {
+                res.redirect('/', {
                     // Use the flash partial to view the error message.
                     flash: {type: 'danger', text: err.message},
                     stickySnippets: []

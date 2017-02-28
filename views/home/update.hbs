@@ -1,0 +1,11 @@
+<h2>Update snippet</h2>
+{{#if stickySnippets }}
+    {{#each stickySnippets}}
+        <p>This snippet was created on: {{createdAt}}.</p>
+        <form action="/update/{{id}}" method="post">
+            {{>validationSummary}}
+            <textarea class="form-snippet" name="value" placeholder="Write your snippet..." value="{{value}}">{{value}}</textarea>
+            <button class="form-button" type="submit">Save</button>
+        </form>
+    {{/each}}
+{{/if}}
