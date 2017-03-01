@@ -156,19 +156,48 @@ router.route('/register').post(function(req, res, next) {
             res.redirect('/login');
         })
         .catch(function(err) {
+            console.log('username ' + err.errors.username);
+            console.log('password ' + err.errors.password);
             // If a validation error occurred, view the form and an error message.
-            if (err.errors.password.name === 'ValidatorError') {
+            if (err.errors.username !== undefined && err.errors.username.name === 'ValidatorError') {
                 // We handle the validation error!
+                    return res.render('home/register', {
+                        validationErrors: [err.errors.username.message],
+                        password: req.body.password,
+                        username: req.body.username
+                    });
+            } else if (err.errors.password !== undefined && err.errors.password.name === 'ValidatorError') {
                 return res.render('home/register', {
                     validationErrors: [err.errors.password.message],
-                    password: req.body.password
+                    password: req.body.password,
+                    username: req.body.username
                 });
-            } else if (err.errors.password.name === 'CastError') {
+            } else if (err.errors.password.name === 'ValidatorError' && err.errors.username.name === 'ValidatorError') {
+                // We handle the validation error!
+                return res.render('home/register', {
+                    validationErrors: [err.errors.username.message, err.errors.password.message],
+                    password: req.body.password,
+                    username: req.body.username
+                });
+            } else if (err.errors.password.name === 'CastError' || err.errors.username.name === 'CastError') {
                 // If it's a cast error we considers it's a bad request!
                 // (Maybe not the smartest thing to do, but WTF, we need to learn
                 // what to do if we want to change the status of the response.)
                 err.status = 400;
             }
+            /*if (err.errors.username.name === 'ValidatorError') {
+                // We handle the validation error!
+                return res.render('home/register', {
+                    validationErrors: [err.errors.username.message],
+                    username: req.body.username,
+                    password: req.body.password
+                });
+            } else if (err.errors.username.name === 'CastError') {
+                // If it's a cast error we considers it's a bad request!
+                // (Maybe not the smartest thing to do, but WTF, we need to learn
+                // what to do if we want to change the status of the response.)
+                err.status = 400;
+            }*/
 
             // Let the middleware handle any errors but ValidatorErrors.
             next(err);
@@ -176,7 +205,31 @@ router.route('/register').post(function(req, res, next) {
 });
 
 router.route('/login').get(function(req, res) {
-    res.render('home/login');
+    RegisterUser.find({}).exec()
+            .then (function(data) {
+                // Map the data
+                let context = {
+                    users: data.map(function(user) {
+                        return {
+                            username: user.username,
+                            password: user.password,
+                            id: user.id
+                        };
+                    })
+                };
+                return context.users;
+            })
+            .then (function(context) {
+                res.render('home/login', { registerUsers: context });
+            })
+            .catch (function(err) {
+                res.render('home/login', {
+                    // Use the flash partial to view the error message.
+                    flash: {type: 'danger', text: err.message},
+                    registerUsers: []
+                });
+            });
+    //res.render('home/login');
 });
 
 

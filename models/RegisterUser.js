@@ -9,25 +9,34 @@
 
 let mongoose = require('mongoose');
 let bcrypt = require('bcrypt-nodejs');
-//const SALTROUNDS = 10;
 
 // Create a schema
 let registerUserSchema = new mongoose.Schema({
     username: {
         type: String,
-        required: true,
+        required: [true, 'Username is required.'],
         unique: true,
+        validate: {
+          validator: function(value, callback) {
+            RegisterUser.find({username: value}, function(err,docs){
+               callback(docs.length === 0);
+            });
+          },
+          message: 'User already exists. Please choose another username.'
+        }
     },
     password: {
         type: String,
-        required: true
+        required: [true, 'Password is required.'],
+        //minlength: 6,
+        validate: {
+          validator: function(value) {
+            return /^[a-z0-9]{6,}$/i.test(value);
+          },
+          message: 'Password must be at least 6 characters long.'
+        }
     }
 });
-
-// Validate password
-registerUserSchema.path('password').validate(function(password) {
-    return password.length >= 6;
-}); // 'The password must be at least 6 characters long.'
 
 // In the User model
 // Using a pre-hook (runs before saving the user)

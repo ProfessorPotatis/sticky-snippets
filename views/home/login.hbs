@@ -1,4 +1,13 @@
 <h2>Login</h2>
+{{#if registerUsers }}
+<dl>
+    {{#each registerUsers}}
+        {{username}}
+        {{password}}
+    {{/each}}
+</dl>
+{{/if}}
+
 <form action="/login" method="post">
     {{>validationSummary}}
     <input type="text" class="form-register" placeholder="Username" value="{{username}}"></input><br>
