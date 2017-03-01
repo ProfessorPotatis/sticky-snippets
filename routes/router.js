@@ -11,6 +11,8 @@ const router = require('express').Router();
 let StickySnippet = require('../models/StickySnippet');
 let RegisterUser = require('../models/RegisterUser');
 
+let sess;
+
 router.route('/').get(function(req, res) {
     /*StickySnippet.remove({}, function(err) {
    console.log('collection removed');
@@ -42,7 +44,12 @@ router.route('/').get(function(req, res) {
 });
 
 router.route('/create').get(function(req, res) {
-    res.render('home/create', {value: undefined});
+    sess = req.session;
+    if (sess.username) {
+        res.render('home/create', {value: undefined});
+    } else {
+        res.status(403).render('error/403');
+    }
 });
 
 router.route('/create').post(function(req, res, next) {
@@ -50,6 +57,7 @@ router.route('/create').post(function(req, res, next) {
     let stickySnippet = new StickySnippet({
         value: req.body.value
     });
+    console.log(stickySnippet);
 
     // Save the stickySnippet to the database.
     stickySnippet.save()
@@ -68,8 +76,6 @@ router.route('/create').post(function(req, res, next) {
                 });
             } else if (err.errors.value.name === 'CastError') {
                 // If it's a cast error we considers it's a bad request!
-                // (Maybe not the smartest thing to do, but WTF, we need to learn
-                // what to do if we want to change the status of the response.)
                 err.status = 400;
             }
 
@@ -156,8 +162,6 @@ router.route('/register').post(function(req, res, next) {
             res.redirect('/login');
         })
         .catch(function(err) {
-            console.log('username ' + err.errors.username);
-            console.log('password ' + err.errors.password);
             // If a validation error occurred, view the form and an error message.
             if (err.errors.username !== undefined && err.errors.username.name === 'ValidatorError') {
                 // We handle the validation error!
@@ -173,7 +177,6 @@ router.route('/register').post(function(req, res, next) {
                     username: req.body.username
                 });
             } else if (err.errors.password.name === 'ValidatorError' && err.errors.username.name === 'ValidatorError') {
-                // We handle the validation error!
                 return res.render('home/register', {
                     validationErrors: [err.errors.username.message, err.errors.password.message],
                     password: req.body.password,
@@ -181,55 +184,67 @@ router.route('/register').post(function(req, res, next) {
                 });
             } else if (err.errors.password.name === 'CastError' || err.errors.username.name === 'CastError') {
                 // If it's a cast error we considers it's a bad request!
-                // (Maybe not the smartest thing to do, but WTF, we need to learn
-                // what to do if we want to change the status of the response.)
                 err.status = 400;
             }
-            /*if (err.errors.username.name === 'ValidatorError') {
-                // We handle the validation error!
-                return res.render('home/register', {
-                    validationErrors: [err.errors.username.message],
-                    username: req.body.username,
-                    password: req.body.password
-                });
-            } else if (err.errors.username.name === 'CastError') {
-                // If it's a cast error we considers it's a bad request!
-                // (Maybe not the smartest thing to do, but WTF, we need to learn
-                // what to do if we want to change the status of the response.)
-                err.status = 400;
-            }*/
-
             // Let the middleware handle any errors but ValidatorErrors.
             next(err);
         });
 });
 
 router.route('/login').get(function(req, res) {
-    RegisterUser.find({}).exec()
-            .then (function(data) {
-                // Map the data
-                let context = {
-                    users: data.map(function(user) {
-                        return {
-                            username: user.username,
-                            password: user.password,
-                            id: user.id
-                        };
-                    })
-                };
-                return context.users;
-            })
-            .then (function(context) {
-                res.render('home/login', { registerUsers: context });
-            })
-            .catch (function(err) {
-                res.render('home/login', {
-                    // Use the flash partial to view the error message.
-                    flash: {type: 'danger', text: err.message},
-                    registerUsers: []
+    res.render('home/login', {username: undefined, password: undefined});
+});
+
+router.route('/login').post(function(req, res, next) {
+    sess = req.session;
+    RegisterUser.findOne({username: req.body.username}).exec()
+        .then (function(data) {
+            let result = function(err, theData) {
+                if (err) {
+                    console.log(err);
+                    next(err);
+                }
+
+                if (theData) {
+                    sess.username = req.body.username;
+                    res.render('home/admin');
+                } else if (!theData) {
+                    console.log('wrong');
+                }
+
+                //console.log(theData);
+                return theData;
+            };
+            data.comparePassword(req.body.password, result);
+        });
+        /*.catch(function(err) {
+            // If a validation error occurred, view the form and an error message.
+            if (err.errors.username !== undefined && err.errors.username.name === 'ValidatorError') {
+                // We handle the validation error!
+                    return res.render('home/login', {
+                        validationErrors: [err.errors.username.message],
+                        password: req.body.password,
+                        username: req.body.username
+                    });
+            } else if (err.errors.password !== undefined && err.errors.password.name === 'ValidatorError') {
+                return res.render('home/register', {
+                    validationErrors: [err.errors.password.message],
+                    password: req.body.password,
+                    username: req.body.username
                 });
-            });
-    //res.render('home/login');
+            } else if (err.errors.password.name === 'ValidatorError' && err.errors.username.name === 'ValidatorError') {
+                return res.render('home/register', {
+                    validationErrors: [err.errors.username.message, err.errors.password.message],
+                    password: req.body.password,
+                    username: req.body.username
+                });
+            } else if (err.errors.password.name === 'CastError' || err.errors.username.name === 'CastError') {
+                // If it's a cast error we considers it's a bad request!
+                err.status = 400;
+            }
+            // Let the middleware handle any errors but ValidatorErrors.
+            next(err);
+        });*/
 });
 
 

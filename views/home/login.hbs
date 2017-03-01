@@ -4,13 +4,14 @@
     {{#each registerUsers}}
         {{username}}
         {{password}}
+        {{id}}<br>
     {{/each}}
 </dl>
 {{/if}}
 
 <form action="/login" method="post">
     {{>validationSummary}}
-    <input type="text" class="form-register" placeholder="Username" value="{{username}}"></input><br>
-    <input type="password" class="form-register" placeholder="Password" value="{{password}}"></input><br>
+    <input type="text" class="form-register" name="username" placeholder="Username" value="{{username}}"></input><br>
+    <input type="password" class="form-register" name="password" placeholder="Password" value="{{password}}"></input><br>
     <button class="form-button" type="submit">Login</button>
 </form>

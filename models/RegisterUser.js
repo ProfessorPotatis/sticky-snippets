@@ -31,7 +31,7 @@ let registerUserSchema = new mongoose.Schema({
         //minlength: 6,
         validate: {
           validator: function(value) {
-            return /^[a-z0-9]{6,}$/i.test(value);
+            return /^[a-z0-9!@#\$%\^\&*\)\(+=._-]{6,}$/i.test(value);
           },
           message: 'Password must be at least 6 characters long.'
         }
@@ -59,6 +59,15 @@ registerUserSchema.pre('save', function(next) {
         });
     });
 });
+
+registerUserSchema.methods.comparePassword = function(candidatePassword, cb) {
+    bcrypt.compare(candidatePassword, this.password, function(err, res) {
+        if (err) {
+            return cb(err);
+        }
+        cb(null, res);
+    });
+};
 
 // Create a model using the schema.
 let RegisterUser = mongoose.model('RegisterUser', registerUserSchema);
