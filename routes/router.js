@@ -13,9 +13,22 @@ let RegisterUser = require('../models/RegisterUser');
 
 let sess;
 
+let isAuthenticated = function(req, res, next) {
+    let sess = req.session;
+
+    // If not authenticated trigger a 403 error.
+    if (!sess.username) {
+        return res.status(403).render('error/403');
+    }
+    next();
+};
+
 router.route('/').get(function(req, res) {
     /*StickySnippet.remove({}, function(err) {
    console.log('collection removed');
+});*/
+/*RegisterUser.remove({}, function(err) {
+console.log('collection removed');
 });*/
     StickySnippet.find({}).exec()
             .then (function(data) {
@@ -43,16 +56,11 @@ router.route('/').get(function(req, res) {
             });
 });
 
-router.route('/create').get(function(req, res) {
-    sess = req.session;
-    if (sess.username) {
-        res.render('home/create', {value: undefined});
-    } else {
-        res.status(403).render('error/403');
-    }
+router.route('/snippet/create').get(isAuthenticated, function(req, res) {
+    res.render('home/create', {value: undefined});
 });
 
-router.route('/create').post(function(req, res, next) {
+router.route('/snippet/create').post(isAuthenticated, function(req, res) {
     // Create a new stickySnippet.
     let stickySnippet = new StickySnippet({
         value: req.body.value
@@ -84,7 +92,7 @@ router.route('/create').post(function(req, res, next) {
         });
 });
 
-router.route('/update/:id').get(function(req, res) {
+router.route('/snippet/update/:id').get(isAuthenticated, function(req, res) {
     StickySnippet.find({_id: req.params.id}).exec()
             .then (function(data) {
                 // Map the data
@@ -111,7 +119,7 @@ router.route('/update/:id').get(function(req, res) {
             });
 });
 
-router.route('/update/:id').post(function(req, res) {
+router.route('/snippet/update/:id').post(isAuthenticated, function(req, res) {
     StickySnippet.findOneAndUpdate({_id: req.params.id}, {value: req.body.value}).exec()
             .then (function() {
                 // Redirect to homepage and show a message.
@@ -127,7 +135,7 @@ router.route('/update/:id').post(function(req, res) {
             });
 });
 
-router.route('/delete/:id').get(function(req, res) {
+router.route('/snippet/delete/:id').get(isAuthenticated, function(req, res) {
     StickySnippet.findOneAndRemove({_id: req.params.id}).exec()
             .then (function() {
                 // Redirect to homepage and show a message.
@@ -198,53 +206,37 @@ router.route('/login').get(function(req, res) {
 router.route('/login').post(function(req, res, next) {
     sess = req.session;
     RegisterUser.findOne({username: req.body.username}).exec()
-        .then (function(data) {
-            let result = function(err, theData) {
+        .then(function(data) {
+            let result = function(err, match) {
                 if (err) {
-                    console.log(err);
                     next(err);
                 }
 
-                if (theData) {
+                if (match) {
                     sess.username = req.body.username;
-                    res.render('home/admin');
-                } else if (!theData) {
-                    console.log('wrong');
+                    res.redirect('/admin');
+                } else {
+                    return res.render('home/login', {
+                        validationErrors: ['Wrong password. Try again.']
+                    });
                 }
-
-                //console.log(theData);
-                return theData;
             };
             data.comparePassword(req.body.password, result);
-        });
-        /*.catch(function(err) {
-            // If a validation error occurred, view the form and an error message.
-            if (err.errors.username !== undefined && err.errors.username.name === 'ValidatorError') {
-                // We handle the validation error!
-                    return res.render('home/login', {
-                        validationErrors: [err.errors.username.message],
-                        password: req.body.password,
-                        username: req.body.username
-                    });
-            } else if (err.errors.password !== undefined && err.errors.password.name === 'ValidatorError') {
-                return res.render('home/register', {
-                    validationErrors: [err.errors.password.message],
-                    password: req.body.password,
-                    username: req.body.username
+        })
+        .catch(function(err) {
+            console.log(err);
+            if (TypeError) {
+                return res.render('home/login', {
+                    validationErrors: ['That user does not exist. Please register.']
                 });
-            } else if (err.errors.password.name === 'ValidatorError' && err.errors.username.name === 'ValidatorError') {
-                return res.render('home/register', {
-                    validationErrors: [err.errors.username.message, err.errors.password.message],
-                    password: req.body.password,
-                    username: req.body.username
-                });
-            } else if (err.errors.password.name === 'CastError' || err.errors.username.name === 'CastError') {
-                // If it's a cast error we considers it's a bad request!
-                err.status = 400;
             }
-            // Let the middleware handle any errors but ValidatorErrors.
             next(err);
-        });*/
+        });
+
+});
+
+router.route('/admin').get(isAuthenticated, function(req, res) {
+    res.render('home/admin');
 });
 
 

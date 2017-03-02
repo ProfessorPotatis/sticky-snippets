@@ -1,8 +1,8 @@
 <h2>Register user</h2>
 <form action="/register" method="post">
     {{>validationSummary}}
-    <input type="text" class="form-register" name="username" placeholder="Username" value="{{username}}"></input><br>
-    <input type="password" class="form-register" name="password" placeholder="Password" value="{{password}}"></input><br>
+    <input type="text" class="form-register" name="username" placeholder="Username" value="{{username}}" required="required"></input><br>
+    <input type="password" class="form-register" name="password" placeholder="Password" value="{{password}}" required="required"></input><br>
     <button class="form-button" type="reset">Reset</button>
     <button class="form-button" type="submit">Register</button>
 </form>

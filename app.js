@@ -42,6 +42,7 @@
  }));
 
  // Flash messages - survives only a round trip.
+ // Using Mats Loocks Pure Approval flash.
  app.use(function(req, res, next) {
      res.locals.flash = req.session.flash;
      delete req.session.flash;
@@ -49,20 +50,12 @@
      next();
  });
 
- // Routes
+ // Use router module
  app.use('/', require('./routes/router.js'));
 
- //Errors
+ // Errors
  app.use(function(req, res) {
      res.status(404).render('error/404');
- });
-
- app.use(function(err, req, res, next) {
-    if (err.status !== 400) {
-        return next(err);
-    }
-    console.error(err.stack);
-    res.status(400).render('This is a 400.');
  });
 
  app.use(function(err, req, res, next) {
