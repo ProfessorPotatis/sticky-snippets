@@ -8,7 +8,7 @@
  'use strict';
 
  let express = require('express');
- let hbs = require('express-handlebars');
+ let hbs = require('express-secure-handlebars');
  let bodyParser = require('body-parser');
  let session = require('express-session');
 

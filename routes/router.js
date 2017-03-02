@@ -200,7 +200,6 @@ router.route('/register').post(function(req, res, next) {
 router.route('/login').get(function(req, res) {
     sess = req.session;
     if (sess.username) {
-        console.log('hallo');
         res.redirect('/admin');
     } else {
         res.render('home/login', {username: undefined, password: undefined});
@@ -229,7 +228,6 @@ router.route('/login').post(function(req, res, next) {
             data.comparePassword(req.body.password, result);
         })
         .catch(function(err) {
-            console.log(err);
             if (TypeError) {
                 return res.render('home/login', {
                     validationErrors: ['That user does not exist. Please register.']
