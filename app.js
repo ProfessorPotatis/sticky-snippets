@@ -8,6 +8,7 @@
  'use strict';
 
  let express = require('express');
+ let helmet = require('helmet');
  let hbs = require('express-secure-handlebars');
  let bodyParser = require('body-parser');
  let session = require('express-session');
@@ -32,6 +33,18 @@
 
  // Static files
  app.use(express.static('public'));
+
+ // Protection against XSS
+ app.use(helmet({
+     xssFilter: false
+ }));
+ app.use(helmet.contentSecurityPolicy({
+     directives: {
+         defaultSrc: ["'self'"],
+         styleSrc: ["'self'"],
+         scriptSrc: ["'self'"]
+     }
+ }));
 
  // Create a session middleware
  app.use(session({
