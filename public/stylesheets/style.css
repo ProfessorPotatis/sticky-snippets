@@ -43,6 +43,9 @@ a {
 .navList li a:hover {
     background-color: #122;
 }
+.right {
+    float: right;
+}
 
 /* CONTAINER SETTINGS */
 .container {

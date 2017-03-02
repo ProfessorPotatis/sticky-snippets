@@ -23,7 +23,7 @@ let isAuthenticated = function(req, res, next) {
     next();
 };
 
-router.route('/').get(function(req, res) {
+router.route('/').get(function(req, res, next) {
     /*StickySnippet.remove({}, function(err) {
    console.log('collection removed');
 });*/
@@ -53,6 +53,7 @@ console.log('collection removed');
                     flash: {type: 'danger', text: err.message},
                     stickySnippets: []
                 });
+                next(err);
             });
 });
 
@@ -60,12 +61,11 @@ router.route('/snippet/create').get(isAuthenticated, function(req, res) {
     res.render('home/create', {value: undefined});
 });
 
-router.route('/snippet/create').post(isAuthenticated, function(req, res) {
+router.route('/snippet/create').post(isAuthenticated, function(req, res, next) {
     // Create a new stickySnippet.
     let stickySnippet = new StickySnippet({
         value: req.body.value
     });
-    console.log(stickySnippet);
 
     // Save the stickySnippet to the database.
     stickySnippet.save()
@@ -82,9 +82,6 @@ router.route('/snippet/create').post(isAuthenticated, function(req, res) {
                     validationErrors: [err.errors.value.message],
                     value: req.body.value
                 });
-            } else if (err.errors.value.name === 'CastError') {
-                // If it's a cast error we considers it's a bad request!
-                err.status = 400;
             }
 
             // Let the middleware handle any errors but ValidatorErrors.
@@ -92,7 +89,7 @@ router.route('/snippet/create').post(isAuthenticated, function(req, res) {
         });
 });
 
-router.route('/snippet/update/:id').get(isAuthenticated, function(req, res) {
+router.route('/snippet/update/:id').get(isAuthenticated, function(req, res, next) {
     StickySnippet.find({_id: req.params.id}).exec()
             .then (function(data) {
                 // Map the data
@@ -116,10 +113,11 @@ router.route('/snippet/update/:id').get(isAuthenticated, function(req, res) {
                     flash: {type: 'danger', text: err.message},
                     stickySnippets: []
                 });
+                next(err);
             });
 });
 
-router.route('/snippet/update/:id').post(isAuthenticated, function(req, res) {
+router.route('/snippet/update/:id').post(isAuthenticated, function(req, res, next) {
     StickySnippet.findOneAndUpdate({_id: req.params.id}, {value: req.body.value}).exec()
             .then (function() {
                 // Redirect to homepage and show a message.
@@ -132,10 +130,11 @@ router.route('/snippet/update/:id').post(isAuthenticated, function(req, res) {
                     flash: {type: 'danger', text: err.message},
                     stickySnippets: []
                 });
+                next(err);
             });
 });
 
-router.route('/snippet/delete/:id').get(isAuthenticated, function(req, res) {
+router.route('/snippet/delete/:id').get(isAuthenticated, function(req, res, next) {
     StickySnippet.findOneAndRemove({_id: req.params.id}).exec()
             .then (function() {
                 // Redirect to homepage and show a message.
@@ -148,6 +147,7 @@ router.route('/snippet/delete/:id').get(isAuthenticated, function(req, res) {
                     flash: {type: 'danger', text: err.message},
                     stickySnippets: []
                 });
+                next();
             });
 });
 
@@ -190,17 +190,21 @@ router.route('/register').post(function(req, res, next) {
                     password: req.body.password,
                     username: req.body.username
                 });
-            } else if (err.errors.password.name === 'CastError' || err.errors.username.name === 'CastError') {
-                // If it's a cast error we considers it's a bad request!
-                err.status = 400;
             }
+
             // Let the middleware handle any errors but ValidatorErrors.
             next(err);
         });
 });
 
 router.route('/login').get(function(req, res) {
-    res.render('home/login', {username: undefined, password: undefined});
+    sess = req.session;
+    if (sess.username) {
+        console.log('hallo');
+        res.redirect('/admin');
+    } else {
+        res.render('home/login', {username: undefined, password: undefined});
+    }
 });
 
 router.route('/login').post(function(req, res, next) {
@@ -217,7 +221,8 @@ router.route('/login').post(function(req, res, next) {
                     res.redirect('/admin');
                 } else {
                     return res.render('home/login', {
-                        validationErrors: ['Wrong password. Try again.']
+                        validationErrors: ['Wrong password. Try again.'],
+                        username: req.body.username
                     });
                 }
             };
@@ -237,6 +242,19 @@ router.route('/login').post(function(req, res, next) {
 
 router.route('/admin').get(isAuthenticated, function(req, res) {
     res.render('home/admin');
+});
+
+router.route('/out').get(function(req, res) {
+    res.render('home/logout');
+});
+
+router.route('/logout').get(isAuthenticated, function(req, res) {
+    sess = req.session;
+    if (sess.username) {
+        // LOG OUT!
+        req.session.destroy();
+        res.redirect('/out');
+    }
 });
 
 
