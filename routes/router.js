@@ -10,6 +10,10 @@
 const router = require('express').Router();
 let StickySnippet = require('../models/StickySnippet');
 let RegisterUser = require('../models/RegisterUser');
+let csrf = require('csurf');
+
+// Protection against CSRF
+let csrfProtection = csrf();
 
 let sess;
 
@@ -57,11 +61,11 @@ console.log('collection removed');
             });
 });
 
-router.route('/snippet/create').get(isAuthenticated, function(req, res) {
-    res.render('home/create', {value: undefined});
+router.route('/snippet/create').get(isAuthenticated, csrfProtection, function(req, res) {
+    res.render('home/create', ({value: undefined}, {csrfToken: req.csrfToken()}));
 });
 
-router.route('/snippet/create').post(isAuthenticated, function(req, res, next) {
+router.route('/snippet/create').post(isAuthenticated, csrfProtection, function(req, res, next) {
     // Create a new stickySnippet.
     let stickySnippet = new StickySnippet({
         value: req.body.value
@@ -89,7 +93,7 @@ router.route('/snippet/create').post(isAuthenticated, function(req, res, next) {
         });
 });
 
-router.route('/snippet/update/:id').get(isAuthenticated, function(req, res, next) {
+router.route('/snippet/update/:id').get(isAuthenticated, csrfProtection, function(req, res, next) {
     StickySnippet.find({_id: req.params.id}).exec()
             .then (function(data) {
                 // Map the data
@@ -98,14 +102,15 @@ router.route('/snippet/update/:id').get(isAuthenticated, function(req, res, next
                         return {
                             value: snippet.value,
                             createdAt: snippet.createdAt,
-                            id: snippet.id
+                            id: snippet.id,
+                            csrfToken: req.csrfToken()
                         };
                     })
                 };
                 return context.snippets;
             })
             .then (function(context) {
-                res.render('home/update', { stickySnippets: context });
+                res.render('home/update', ({stickySnippets: context}));
             })
             .catch (function(err) {
                 res.render('home/update', {
@@ -117,7 +122,7 @@ router.route('/snippet/update/:id').get(isAuthenticated, function(req, res, next
             });
 });
 
-router.route('/snippet/update/:id').post(isAuthenticated, function(req, res, next) {
+router.route('/snippet/update/:id').post(isAuthenticated, csrfProtection, function(req, res, next) {
     StickySnippet.findOneAndUpdate({_id: req.params.id}, {value: req.body.value}).exec()
             .then (function() {
                 // Redirect to homepage and show a message.
@@ -151,11 +156,11 @@ router.route('/snippet/delete/:id').get(isAuthenticated, function(req, res, next
             });
 });
 
-router.route('/register').get(function(req, res) {
-    res.render('home/register', {username: undefined, password: undefined});
+router.route('/register').get(csrfProtection, function(req, res) {
+    res.render('home/register', ({username: undefined, password: undefined}, {csrfToken: req.csrfToken()}));
 });
 
-router.route('/register').post(function(req, res, next) {
+router.route('/register').post(csrfProtection, function(req, res, next) {
     // Create a new user.
     let registerUser = new RegisterUser({
         username: req.body.username,
@@ -197,16 +202,16 @@ router.route('/register').post(function(req, res, next) {
         });
 });
 
-router.route('/login').get(function(req, res) {
+router.route('/login').get(csrfProtection, function(req, res) {
     sess = req.session;
     if (sess.username) {
         res.redirect('/admin');
     } else {
-        res.render('home/login', {username: undefined, password: undefined});
+        res.render('home/login', ({username: undefined, password: undefined}, {csrfToken: req.csrfToken()}));
     }
 });
 
-router.route('/login').post(function(req, res, next) {
+router.route('/login').post(csrfProtection, function(req, res, next) {
     sess = req.session;
     RegisterUser.findOne({username: req.body.username}).exec()
         .then(function(data) {

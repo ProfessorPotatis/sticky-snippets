@@ -26,6 +26,7 @@
   "dependencies": {
     "bcrypt-nodejs": "0.0.3",
     "body-parser": "^1.16.1",
+    "csurf": "^1.9.0",
     "express": "^4.14.1",
     "express-secure-handlebars": "^2.1.0",
     "express-session": "^1.15.1",

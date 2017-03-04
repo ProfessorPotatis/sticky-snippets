@@ -8,6 +8,7 @@
  'use strict';
 
  let express = require('express');
+ //let csrf = require('csurf');
  let helmet = require('helmet');
  let hbs = require('express-secure-handlebars');
  let bodyParser = require('body-parser');
@@ -29,14 +30,14 @@
  app.use(bodyParser.json());
 
  // Parsing of form data
- app.use(bodyParser.urlencoded({ extended: true }));
+ app.use(bodyParser.urlencoded({ extended: false }));
 
  // Static files
  app.use(express.static('public'));
 
  // Protection against XSS
  app.use(helmet({
-     xssFilter: false
+     xssFilter: false // Already implemented express-secure-handlebars
  }));
  app.use(helmet.contentSecurityPolicy({
      directives: {
@@ -53,6 +54,9 @@
      saveUninitialized: false,
      resave: false
  }));
+
+ // Protection against CSRF
+ //let csrfProtection = csrf({cookie: false});
 
  // Flash messages - survives only a round trip.
  // Using Mats Loocks Pure Approval flash.
