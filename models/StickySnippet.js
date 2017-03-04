@@ -9,7 +9,7 @@
 
 let mongoose = require('mongoose');
 
-// Create a schema
+// Create a schema for stickySnippet
 let stickySnippetSchema = new mongoose.Schema({
     value: {
         type: String,

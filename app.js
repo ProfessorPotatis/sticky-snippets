@@ -8,7 +8,6 @@
  'use strict';
 
  let express = require('express');
- //let csrf = require('csurf');
  let helmet = require('helmet');
  let hbs = require('express-secure-handlebars');
  let bodyParser = require('body-parser');
@@ -39,6 +38,7 @@
  app.use(helmet({
      xssFilter: false // Already implemented express-secure-handlebars
  }));
+ // Only allow style and script from same origin
  app.use(helmet.contentSecurityPolicy({
      directives: {
          defaultSrc: ["'self'"],
@@ -55,9 +55,6 @@
      resave: false
  }));
 
- // Protection against CSRF
- //let csrfProtection = csrf({cookie: false});
-
  // Flash messages - survives only a round trip.
  // Using Mats Loocks Pure Approval flash.
  app.use(function(req, res, next) {
@@ -70,7 +67,7 @@
  // Use router module
  app.use('/', require('./routes/router.js'));
 
- // Errors
+ // Errors 404, 403 and 500
  app.use(function(req, res) {
      res.status(404).render('error/404');
  });
@@ -88,7 +85,7 @@
     res.status(500).render('error/500');
  });
 
- // Start listening
+ // Start listening on assigned port
  app.listen(port, function () {
      console.log('Application listening on port ' + port + '.');
  });

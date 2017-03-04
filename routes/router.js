@@ -12,11 +12,13 @@ let StickySnippet = require('../models/StickySnippet');
 let RegisterUser = require('../models/RegisterUser');
 let csrf = require('csurf');
 
-// Protection against CSRF
+// Protection against CSRF attacks
 let csrfProtection = csrf();
 
+// Session variable
 let sess;
 
+// Middleware for authentication
 let isAuthenticated = function(req, res, next) {
     let sess = req.session;
 
@@ -27,13 +29,15 @@ let isAuthenticated = function(req, res, next) {
     next();
 };
 
+/* Finding and presenting stickySnippets on firstpage */
 router.route('/').get(function(req, res, next) {
+    /* Empty the database of stickySnippets and registered users */
     /*StickySnippet.remove({}, function(err) {
-   console.log('collection removed');
-});*/
-/*RegisterUser.remove({}, function(err) {
-console.log('collection removed');
-});*/
+       console.log('All stickySnippets removed.');
+    });*/
+    /*RegisterUser.remove({}, function(err) {
+        console.log('All registered users removed.');
+    });*/
     StickySnippet.find({}).exec()
             .then (function(data) {
                 // Map the data
@@ -61,10 +65,12 @@ console.log('collection removed');
             });
 });
 
+/* If authenticated, show create page for stickySnippet. Use csrfToken. */
 router.route('/snippet/create').get(isAuthenticated, csrfProtection, function(req, res) {
     res.render('home/create', ({value: undefined}, {csrfToken: req.csrfToken()}));
 });
 
+/* If authenticated and the csrfToken is valid, post stickySnippet to firstpage. */
 router.route('/snippet/create').post(isAuthenticated, csrfProtection, function(req, res, next) {
     // Create a new stickySnippet.
     let stickySnippet = new StickySnippet({
@@ -80,6 +86,7 @@ router.route('/snippet/create').post(isAuthenticated, csrfProtection, function(r
         })
         .catch(function(err) {
             // If a validation error occurred, view the form and an error message.
+            // Using Mats Loocks Pure Approval flash.
             if (err.errors.value.name === 'ValidatorError') {
                 // We handle the validation error!
                 return res.render('home/create', {
@@ -93,10 +100,11 @@ router.route('/snippet/create').post(isAuthenticated, csrfProtection, function(r
         });
 });
 
+/* If authenticated, show update page for specific stickySnippet. Use csrfToken. */
 router.route('/snippet/update/:id').get(isAuthenticated, csrfProtection, function(req, res, next) {
     StickySnippet.find({_id: req.params.id}).exec()
             .then (function(data) {
-                // Map the data
+                // Map the data and include csrfToken
                 let context = {
                     snippets: data.map(function(snippet) {
                         return {
@@ -122,6 +130,7 @@ router.route('/snippet/update/:id').get(isAuthenticated, csrfProtection, functio
             });
 });
 
+/* If authenticated and the csrfToken is valid, post updated stickySnippet to firstpage. */
 router.route('/snippet/update/:id').post(isAuthenticated, csrfProtection, function(req, res, next) {
     StickySnippet.findOneAndUpdate({_id: req.params.id}, {value: req.body.value}).exec()
             .then (function() {
@@ -139,6 +148,7 @@ router.route('/snippet/update/:id').post(isAuthenticated, csrfProtection, functi
             });
 });
 
+/* If authenticated, delete specific stickySnippet. */
 router.route('/snippet/delete/:id').get(isAuthenticated, function(req, res, next) {
     StickySnippet.findOneAndRemove({_id: req.params.id}).exec()
             .then (function() {
@@ -156,10 +166,12 @@ router.route('/snippet/delete/:id').get(isAuthenticated, function(req, res, next
             });
 });
 
+/* Show register page and include csrfToken. */
 router.route('/register').get(csrfProtection, function(req, res) {
     res.render('home/register', ({username: undefined, password: undefined}, {csrfToken: req.csrfToken()}));
 });
 
+/* If csrfToken is valid save new user to database. */
 router.route('/register').post(csrfProtection, function(req, res, next) {
     // Create a new user.
     let registerUser = new RegisterUser({
@@ -170,7 +182,7 @@ router.route('/register').post(csrfProtection, function(req, res, next) {
     // Save the user to the database.
     registerUser.save()
         .then(function() {
-            // Redirect to homepage and show a message.
+            // Redirect to login and show a message.
             req.session.flash = {type: 'success', text: 'The user was saved successfully. Please login.'};
             res.redirect('/login');
         })
@@ -202,8 +214,10 @@ router.route('/register').post(csrfProtection, function(req, res, next) {
         });
 });
 
+/* Show login page and include csrfToken. Set session. */
 router.route('/login').get(csrfProtection, function(req, res) {
     sess = req.session;
+    // If logged in redirect to admin page, else show login page.
     if (sess.username) {
         res.redirect('/admin');
     } else {
@@ -211,8 +225,10 @@ router.route('/login').get(csrfProtection, function(req, res) {
     }
 });
 
+/* If csrfToken is valid, user exist and password is correct: log in user. */
 router.route('/login').post(csrfProtection, function(req, res, next) {
     sess = req.session;
+    // Look for user in database.
     RegisterUser.findOne({username: req.body.username}).exec()
         .then(function(data) {
             let result = function(err, match) {
@@ -230,6 +246,8 @@ router.route('/login').post(csrfProtection, function(req, res, next) {
                     });
                 }
             };
+
+            // Compare password to password in database.
             data.comparePassword(req.body.password, result);
         })
         .catch(function(err) {
@@ -243,14 +261,17 @@ router.route('/login').post(csrfProtection, function(req, res, next) {
 
 });
 
+/* If authenticated, show admin page. */
 router.route('/admin').get(isAuthenticated, function(req, res) {
     res.render('home/admin');
 });
 
+/* Show logged out page. */
 router.route('/out').get(function(req, res) {
     res.render('home/logout');
 });
 
+/* If authenticated, destroy session and redirect to logged out page. */
 router.route('/logout').get(isAuthenticated, function(req, res) {
     sess = req.session;
     if (sess.username) {
@@ -260,5 +281,5 @@ router.route('/logout').get(isAuthenticated, function(req, res) {
     }
 });
 
-
+// Export the module
 module.exports = router;

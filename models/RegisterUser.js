@@ -10,13 +10,14 @@
 let mongoose = require('mongoose');
 let bcrypt = require('bcrypt-nodejs');
 
-// Create a schema
+// Create a schema for registerUser
 let registerUserSchema = new mongoose.Schema({
     username: {
         type: String,
         required: [true, 'Username is required.'],
         unique: true,
         validate: {
+            // Check if user already exist in database
           validator: function(value, callback) {
             RegisterUser.find({username: value}, function(err,docs){
                callback(docs.length === 0);
@@ -28,8 +29,8 @@ let registerUserSchema = new mongoose.Schema({
     password: {
         type: String,
         required: [true, 'Password is required.'],
-        //minlength: 6,
         validate: {
+            // Validate password to check for valid characters and minimum length
           validator: function(value) {
             return /^[a-z0-9!@#\$%\^\&*\)\(+=._-]{6,}$/i.test(value);
           },
@@ -38,8 +39,8 @@ let registerUserSchema = new mongoose.Schema({
     }
 });
 
-// In the User model
 // Using a pre-hook (runs before saving the user)
+// Generating salt and salting the inputed password
 registerUserSchema.pre('save', function(next) {
     let user = this;
     bcrypt.genSalt(10, function(err, salt) {
@@ -60,6 +61,7 @@ registerUserSchema.pre('save', function(next) {
     });
 });
 
+// Method for comparing login password with password in database
 registerUserSchema.methods.comparePassword = function(candidatePassword, cb) {
     bcrypt.compare(candidatePassword, this.password, function(err, res) {
         if (err) {
